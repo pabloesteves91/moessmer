@@ -213,7 +213,7 @@
   }
 
   /* ---------- Reveal on scroll ---------- */
-  const revealEls = $$(".section__head, .step, .tile, .price, .fees__group, .calc, .card, .map, .faq details, .cta__inner");
+  const revealEls = $$(".section__head, .review, .rabatt, .step, .tile, .price, .fees__group, .calc, .card, .map, .faq details, .cta__inner");
   if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
     revealEls.forEach((el) => el.classList.add("reveal"));
     const io = new IntersectionObserver((entries) => {
