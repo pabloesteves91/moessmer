@@ -77,6 +77,7 @@
   const fmt = (m) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 
   const renderStatus = () => {
+    if (!$("[data-status]") && !$(".hours__table")) return;
     const now = berlinNow();
     const today = hoursFor(now.iso, now.wd);
     let open = false;
@@ -133,6 +134,8 @@
 
   /* ---------- Cost calculator ---------- */
   const type = $("#calc-type");
+  if (type) initCalc();
+  function initCalc() {
   const days = $("#calc-days");
   const daysOut = $("#calc-days-out");
   const heavy = $("#calc-heavy");
@@ -153,6 +156,7 @@
   };
   [type, days, heavy].forEach((el) => el.addEventListener("input", calc));
   calc();
+  }
 
   /* ---------- Map (loaded on consent) ---------- */
   const mapBtn = $("[data-load-map]");
@@ -167,7 +171,7 @@
 
   /* ---------- Login dialog ---------- */
   const dialog = $("#login");
-  $$("[data-open-login]").forEach((btn) =>
+  if (dialog) $$("[data-open-login]").forEach((btn) =>
     btn.addEventListener("click", () => {
       if (typeof dialog.showModal === "function") {
         dialog.showModal();
@@ -177,7 +181,36 @@
       }
     })
   );
-  dialog.addEventListener("click", (e) => e.target === dialog && dialog.close());
+  dialog?.addEventListener("click", (e) => e.target === dialog && dialog.close());
+
+  /* ---------- Password toggle ---------- */
+  $$("[data-toggle-pw]").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      const input = $("input", btn.parentElement);
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      btn.textContent = show ? "Verbergen" : "Anzeigen";
+    })
+  );
+
+  /* ---------- Captcha: reload on click ---------- */
+  $$("[data-captcha]").forEach((img) => {
+    img.title = "Klicken für neuen Code";
+    img.style.cursor = "pointer";
+    img.addEventListener("click", () => (img.src = img.src.split("?")[0] + "?" + Date.now()));
+  });
+
+  /* ---------- Legal pages: active TOC entry ---------- */
+  const tocLinks = $$(".toc a");
+  if (tocLinks.length && "IntersectionObserver" in window) {
+    const tocObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        tocLinks.forEach((a) => a.classList.toggle("is-active", a.getAttribute("href") === "#" + entry.target.id));
+      });
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    tocLinks.forEach((a) => { const t = document.getElementById(a.getAttribute("href").slice(1)); if (t) tocObserver.observe(t); });
+  }
 
   /* ---------- Reveal on scroll ---------- */
   const revealEls = $$(".section__head, .step, .tile, .price, .fees__group, .calc, .card, .map, .faq details, .cta__inner");
